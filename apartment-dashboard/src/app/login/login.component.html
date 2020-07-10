@@ -1,3 +1,66 @@
 <div class="main">
-  <p>login works!</p>
+  <div *ngIf="intro" class="login-dialog" id="intro">
+    <h1>Login</h1>
+    <p>Please log in as a</p>
+    <button (click)="update('resident')">Resident</button>
+    <p>or</p>
+    <button (click)="update('guest')">Guest</button>
+  </div>
+
+  <div *ngIf="resident" class="login-dialog" id="resident">
+    <form>
+      <label>
+        Name<br>
+        <input type="text" id="resident-name">
+      </label><br>
+      <label>
+        Email<br>
+        <input type="text" id="resident-email">
+      </label><br>
+      <button type="submit">Login</button>
+    </form>
+
+    <p>Is this your first time logging in? Please <a (click)="update('register1')">register</a>
+      first.</p>
+  </div>
+
+  <div *ngIf="register1" class="login-dialog" id="register-1">
+    <h1>Register</h1>
+    <form>
+      <label>
+        Registration Code<br>
+        <input type="text" id="word-1"> -
+        <input type="text" id="word-2"> -
+        <input type="text" id="word-3"> -
+        <input type="text" id="word-4"> -
+        <input type="text" id="word-5">
+      </label><br>
+      <button type="submit" (click)="update('register2')">Submit</button>
+    </form>
+  </div>
+
+  <div *ngIf="register2" class="login-dialog" id="register-2">
+    <h1>Register</h1>
+    <form>
+      <label>
+        Name<br>
+        <input type="text" id="register-name">
+      </label><br>
+      <label>
+        Email<br>
+        <input type="text" id="register-email">
+      </label><br>
+      <button type="submit">Register</button>
+    </form>
+  </div>
+
+  <div *ngIf="guest" class="login-dialog" id="guest">
+    <form>
+      <label>
+        Name<br>
+        <input type="text" id="guest-name">
+      </label><br>
+      <button type="submit">Login</button>
+    </form>
+  </div>
 </div>
