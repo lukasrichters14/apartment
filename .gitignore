@@ -1,7 +1,9 @@
 /.idea
 /logbook.txt
-/Apartment Network Program.rtf
+/"Apartment Network Program.rtf"
 /data
+/keys
+*.spec.ts
 
 
 

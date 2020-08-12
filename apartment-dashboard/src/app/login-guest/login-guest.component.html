@@ -1,0 +1,11 @@
+<div class="login-dialog" id="guest">
+    <form>
+      <p *ngIf="required" class="error">This is a required field.</p>
+      <p *ngIf="errMessage != ''" class="error">{{errMessage}}</p>
+      <label>
+        Name<br>
+        <input type="text" id="guest-name" [formControl]="guestName">
+      </label><br>
+      <button type="submit" (click)="onSubmit()">Login</button>
+    </form>
+  </div>

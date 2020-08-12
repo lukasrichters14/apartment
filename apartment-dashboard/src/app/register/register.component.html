@@ -1,0 +1,24 @@
+<div class="login-dialog" id="register">
+    <h1>Register</h1>
+    <form [formGroup]="registerGroup">
+      <p *ngIf="required" class="error">All fields on this page are required.</p>
+      <p *ngIf="errMessage != ''" class="error">{{errMessage}}</p>
+      <label>
+        Registration Code<br>
+        <input type="text" id="word-1" formControlName="word1" required> -
+        <input type="text" id="word-2" formControlName="word2" required> -
+        <input type="text" id="word-3" formControlName="word3" required> -
+        <input type="text" id="word-4" formControlName="word4" required> -
+        <input type="text" id="word-5" formControlName="word5" required>
+      </label><br>
+      <label>
+        Name<br>
+        <input type="text" id="register-name" formControlName="name" required>
+      </label><br>
+      <label>
+        Email<br>
+        <input type="text" id="register-email" formControlName="email" required>
+      </label><br>
+      <button type="submit" (click)="onSubmit()">Submit</button>
+    </form>
+  </div>

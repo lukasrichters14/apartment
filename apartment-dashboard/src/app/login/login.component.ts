@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import {FormControl, FormGroup} from "@angular/forms";
+import {ApiService} from "../api.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-login',
@@ -6,45 +9,47 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  intro = true;
-  resident = false;
-  guest = false;
-  register1 = false;
-  register2 = false;
+  // Error displays.
+  required = false;
+  errMessage: string = '';
 
-  constructor() { }
+  // Forms.
+  residentGroup = new FormGroup({
+    name : new FormControl(''),
+    email : new FormControl('')
+  })
+
+  constructor(private api: ApiService, private router:Router) { }
 
   ngOnInit(): void {
   }
 
-
   /**
-   * Determines which page is to be displayed next.
-   * @param page: the page to navigate to.
+   * Submits the form to the proper API endpoint based on which page submitted the form.
    */
-  update(page: string): void{
-    // Sets which page is to be displayed.
-    switch (page) {
-      case "resident":
-        this.intro = false;
-        this.resident = true;
-        break;
-
-      case "guest":
-        this.intro = false;
-        this.guest = true;
-        break;
-
-      case "register1":
-        this.resident = false;
-        this.register1 = true;
-        break;
-
-      case "register2":
-        this.register1 = false;
-        this.register2 = true;
-        break;
+  onSubmit(): void {
+    // First stage of login as a resident, submit info in order to get a code sent by email.
+    // Display required error.
+    if (this.residentGroup.value['name'] == '' || this.residentGroup.value['email'] == '') {
+      this.required = true;
+      return
     }
+    // Turn off required error.
+    this.required = false;
+    // First stage of login requires name and email.
+    this.api.login(this.residentGroup.value['name'], this.residentGroup.value['email'])
+      .subscribe(resp => {
+        // Display the error message from the API if one occurs.
+        if (resp.hasOwnProperty('error')) {
+          this.errMessage = resp['error'];
+        }
+        // Navigate user to the login code page, since they had valid credentials.
+        else {
+          // Remove any error message.
+          this.errMessage = '';
+          this.router.navigateByUrl('login/code')
+        }
+      });
   }
 
 }
