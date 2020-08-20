@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+
+.main-login {
+  display: flex;
+  margin: 2rem auto 2rem auto;
+  padding: 1rem;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+}
+
+.login-dialog {
+  border: solid black 2px;
+  border-radius: 2px;
+  padding: 2rem;
+  width: 21%;
+}
+
+input {
+  margin-bottom: 1rem;
+}

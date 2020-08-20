@@ -22,18 +22,23 @@ export class ApiService {
   login(name: string="", email: string="", loginCode: string="") {
     // Format API url based on the given parameters.
     let url = ''
+    let content;
     if (name && email){
-      url = `${this.API_URL}login?name=${name}&email=${email}`;
+      url = `${this.API_URL}login`;
+      content = {name: name, email: email};
     }
+    // Use login code.
     else if(loginCode){
-      url = `${this.API_URL}login?code=${loginCode}`;
+      url = `${this.API_URL}login`;
+      content = {code: loginCode};
     }
     // Login guest.
     else if(name){
-      url = `${this.API_URL}login-guest?name=${name}`;
+      url = `${this.API_URL}login-guest`;
+      content = {name: name};
     }
 
-    return this.http.get(url)
+    return this.http.post(url, content)
       .pipe(
         //retry(1), // retry a failed request up to 1 time
         catchError(ApiService.handleError) // then handle the error
@@ -47,8 +52,9 @@ export class ApiService {
    * @param email: the user's email address.
    */
   register(registrationCode: string, name: string, email:string) {
-    let url = `${this.API_URL}register?code=${registrationCode}&name=${name}&email=${email}`
-    return this.http.get(url)
+    let url = `${this.API_URL}register`
+    let content = {code: registrationCode, name: name, email: email}
+    return this.http.post(url, content)
       .pipe(
         catchError(ApiService.handleError)
       )

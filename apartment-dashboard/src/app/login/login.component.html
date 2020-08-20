@@ -1,4 +1,6 @@
+<div class="main-login">
   <div class="login-dialog" id="resident">
+    <h2>Login</h2>
     <form [formGroup]="residentGroup">
       <p *ngIf="required" class="error">All fields on this page are required.</p>
       <p *ngIf="errMessage != ''" class="error">{{errMessage}}</p>
@@ -17,3 +19,4 @@
 
     <p>Is this your first time logging in? Please <a routerLink="/register">register</a>.</p>
   </div>
+</div>

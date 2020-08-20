@@ -1,0 +1,38 @@
+.main {
+  display: flex;
+  flex-flow: column wrap;
+}
+
+.dashboard-main{
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+  margin-top: 2rem;
+}
+
+.dashboard-card{
+  width: 25%;
+  border: solid black 2px;
+  border-radius: 2px;
+  padding: 2rem;
+}
+
+#menu {
+  width: 5%;
+}
+
+#rent-cost {
+  font-size: 3rem;
+  text-align: center;
+  margin: auto;
+}
+
+.utility-update {
+  display: flex;
+  flex-flow: row nowrap;
+  align-content: center;
+}
+
+.update-button {
+  margin: auto auto auto 2rem;
+}

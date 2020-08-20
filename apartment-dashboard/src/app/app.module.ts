@@ -10,6 +10,7 @@ import { HttpClientModule } from "@angular/common/http";
 import { LoginGuestComponent } from './login-guest/login-guest.component';
 import { RegisterComponent } from './register/register.component';
 import { LoginCodeComponent } from './login-code/login-code.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { LoginCodeComponent } from './login-code/login-code.component';
     LoginComponent,
     LoginGuestComponent,
     RegisterComponent,
-    LoginCodeComponent
+    LoginCodeComponent,
+    DashboardComponent
   ],
     imports: [
         BrowserModule,

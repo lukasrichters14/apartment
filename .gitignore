@@ -4,6 +4,8 @@
 /data
 /keys
 *.spec.ts
+spotipy-test.py
+.cache-lukasrichters14
 
 
 

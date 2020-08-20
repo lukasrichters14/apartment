@@ -1,5 +1,6 @@
+<div class="main-login">
 <div class="login-dialog" id="register">
-    <h1>Register</h1>
+    <h2>Register</h2>
     <form [formGroup]="registerGroup">
       <p *ngIf="required" class="error">All fields on this page are required.</p>
       <p *ngIf="errMessage != ''" class="error">{{errMessage}}</p>
@@ -22,3 +23,4 @@
       <button type="submit" (click)="onSubmit()">Submit</button>
     </form>
   </div>
+</div>

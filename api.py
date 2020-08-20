@@ -6,6 +6,8 @@ import sqlite3
 
 from random import randint
 import time
+from datetime import datetime
+import pytz
 
 import jwt
 
@@ -19,6 +21,7 @@ app.config['DEBUG'] = True
 CORS(app)
 
 USERS_DB = './data/users.db'
+APARTMENT_DB = './data/apartment.db'
 PUBLIC_KEY_FILE_NAME = './keys/public-key.pem'
 PRIVATE_KEY_FILE_NAME = './keys/private-key.pem'
 
@@ -52,11 +55,13 @@ def create_dict(cursor, row):
     return d
 
 
-def query_db(db, query):
+def query_db(db, query, fetch_multiple=False):
     """
     Performs an SQL query on a database.
     :param db: [string] the file path to the database.
     :param query: [string] an SQL-formatted query to the database.
+    :param fetch_multiple: [bool] True if multiple rows should be returned from the database, False
+    if only one row should be returned.
     :return: [list] the SQL response from the query.
     """
     # Connect to the database.
@@ -64,7 +69,10 @@ def query_db(db, query):
     # Set the format of the return of the SQL query.
     database.row_factory = create_dict
     cursor = database.cursor()
-    result = cursor.execute(query).fetchall()
+    if fetch_multiple:
+        result = cursor.execute(query).fetchall()
+    else:
+        result = cursor.execute(query).fetchone()
     cursor.close()
     return result
 
@@ -86,17 +94,20 @@ def modify_db(db, query):
     cursor.close()
 
 
-def authenticated(username, token):
+def authenticated(request_obj, resident_page=True):
     """
     Checks user database for the provided token.
-    :param username: [string] the user's identification name.
-    :param token: [string] the token granted to current users.
-    :return: [bool] True if the username/token combination is valid, False otherwise.
+    :param request_obj: the Flask request object.
+    :param resident_page: [bool] True if the page requires a resident account.
+    :return: [bool] True if the user has access to this page, False otherwise.
     """
-    query = ''
-    result = query_db(USERS_DB, query)
-    # There is a user with the given user and token combination, they are authenticated.
-    if result:
+    token = request_obj.cookies.get('aptJWT')
+    query = 'SELECT * FROM users WHERE token="{}";'.format(token)
+    result = query_db(USERS_DB, query, True)
+    # Token exists.
+    if len(result) == 1:
+        if result[0]['resident'] == 0 and resident_page is True:
+            return False
         return True
     return False
 
@@ -147,24 +158,25 @@ def valid_registration_code(code):
     # Ensure code doesn't have malicious SQL in it.
     if check_registration_code(code):
         query = 'SELECT code FROM registration_codes WHERE code="{}";'.format(code)
-        result = query_db(USERS_DB, query)
+        result = query_db(USERS_DB, query, True)
         if len(result) == 1:
             return True
 
     return False
 
 
-@app.route('/register', methods=['GET'])
+@app.route('/register', methods=['POST'])
 def register():
     """
     Registers a user with the network.
     :return: [string] a JSON object with an error or success message.
     """
+    post_data = request.get_json()
     # Ensure registration code, name, and email are provided in the request.
-    if "code" in request.args and "name" in request.args and "email" in request.args:
-        code = str(request.args["code"])
-        name = str(request.args["name"])
-        email = str(request.args["email"])
+    if "code" in post_data and "name" in post_data and "email" in post_data:
+        code = str(post_data["code"])
+        name = str(post_data["name"])
+        email = str(post_data["email"])
     # Error if any field is unfilled.
     else:
         return response(error=True, msg="Insufficient information.")
@@ -233,7 +245,7 @@ def provide_jwt(name, resident=False):
     return resp
 
 
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['POST'])
 def login():
     """
     Logs a user into the application. Handles both the name/email portion, and the final login using
@@ -241,13 +253,14 @@ def login():
     :return: [string] JSON data containing either a JWT or simple success message based on the login
     stage.
     """
+    post_data = request.get_json()
     # 1st stage login; return a success message.
-    if "name" in request.args and "email" in request.args:
-        name = str(request.args["name"])
-        email = str(request.args["email"])
+    if "name" in post_data and "email" in post_data:
+        name = str(post_data["name"])
+        email = str(post_data["email"])
         # Check that the user exists in the database.
         query = 'SELECT * FROM users WHERE name="{}" AND email="{}";'.format(name, email)
-        result = query_db(USERS_DB, query)
+        result = query_db(USERS_DB, query, True)
         if len(result) == 1:
             # Get a login code for the user.
             login_code = generate_login_code()
@@ -261,10 +274,10 @@ def login():
         return response(error=True, msg='The name and email combination is invalid')
 
     # 2nd stage login; return JWT.
-    elif "code" in request.args:
+    elif "code" in post_data:
         # Ensure login code exists.
-        query = 'SELECT * FROM users WHERE login_code={};'.format(str(int(request.args['code'])))
-        result = query_db(USERS_DB, query)
+        query = 'SELECT * FROM users WHERE login_code={};'.format(str(int(post_data['code'])))
+        result = query_db(USERS_DB, query, True)
         # If the user supplied a valid login code, give them a JWT.
         if len(result) == 1:
             # There will be only one result, first dict has the name.
@@ -282,14 +295,15 @@ def login():
                                         'application')
 
 
-@app.route('/login-guest', methods=['GET'])
+@app.route('/login-guest', methods=['POST'])
 def login_guest():
     """
-    Logs a guest into the application.
+    Log a guest into the application.
     :return: A cookie with a JSON Web Token payload.
     """
-    if 'name' in request.args:
-        name = request.args['name']
+    post_data = request.get_json()
+    if 'name' in post_data:
+        name = post_data['name']
         # Add guest to the database.
         cmd = 'INSERT INTO users VALUES ("{}", NULL, 0, 0, NULL);'.format(name)
         modify_db(USERS_DB, cmd)
@@ -298,6 +312,34 @@ def login_guest():
 
     return response(error=True, msg='There is insufficient data to log a user into the '
                                     'application')
+
+
+@app.route('/utilities', methods=['GET', 'POST'])
+def utilities():
+    """
+    Get the utilities cost or set the utilities cost.
+    :return: Success or Error message.
+    """
+    if request.method == 'GET':
+        if 'number' in request.args:
+            apt_num = request.args['number']
+            query = 'SELECT cost FROM utilities WHERE apt_number={};'.format(apt_num)
+            return query_db(APARTMENT_DB, query)
+        return response(error=True, msg='There is insufficient data to log a user into the '
+                                        'application')
+
+    elif request.method == 'POST':
+        post_data = request.get_json()
+        if 'cost' in post_data:
+            apt_num = post_data['apt_number']
+            cost = post_data['cost']
+            # Get current time (Eastern Time Zone).
+            update_time = datetime.now(pytz.timezone('US/Eastern'))
+            cmd = 'UPDATE utilities SET cost={}, update_time={}, update_user={} ' \
+                  'WHERE apt_number={};'.format(cost, update_time, 'TODO', apt_num)
+            modify_db(APARTMENT_DB, cmd)
+            # Successfully completed, return a successful response.
+            return response()
 
 
 if __name__ == '__main__':
