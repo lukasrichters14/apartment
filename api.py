@@ -1,44 +1,22 @@
 import flask
 from flask import request, jsonify, make_response
 from flask_cors import CORS
-
 import sqlite3
 
-from random import randint
-import time
-from datetime import datetime
-import pytz
-
-import jwt
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
+from speaker import Speaker
+from security import SecurityController
 
 app = flask.Flask(__name__)
 app.config['DEBUG'] = True
+CORS(app)  # Prevent CORS errors.
 
-# Prevent CORS errors.
-CORS(app)
-
+# Databases.
 USERS_DB = './data/users.db'
-APARTMENT_DB = './data/apartment.db'
-PUBLIC_KEY_FILE_NAME = './keys/public-key.pem'
-PRIVATE_KEY_FILE_NAME = './keys/private-key.pem'
+SPOTIFY_DB = './data/spotify.db'
 
-# Get private key.
-with open(PRIVATE_KEY_FILE_NAME, "rb") as key_file:
-    PRIVATE_KEY = serialization.load_pem_private_key(
-        key_file.read(),
-        password=None,
-        backend=default_backend()
-    )
-
-# Get public key.
-with open(PUBLIC_KEY_FILE_NAME, "rb") as key_file:
-    PUBLIC_KEY = serialization.load_pem_public_key(
-        key_file.read(),
-        backend=default_backend()
-    )
+# Control classes
+sp = Speaker('raspotify (raspberrypi)')
+sc = SecurityController()
 
 
 def create_dict(cursor, row):
@@ -112,7 +90,7 @@ def authenticated(request_obj, resident_page=True):
     return False
 
 
-def response(error=False, msg="1"):
+def response(error=False, msg="200 OK"):
     """
     Creates a JSON string. Defaults assume the operation completed successfully.
     :param error: [bool] True if there was an error, False otherwise.
@@ -195,38 +173,6 @@ def register():
         return response(error=True, msg="The provided code is invalid.")
 
 
-def generate_login_code():
-    """
-    Randomly generates a 5-digit number to use as a temporary login code for the user.
-    :return: [int] the number generated to login with.
-    """
-    return randint(10000, 99999)
-
-
-def generate_jwt(resident):
-    """
-    Generates a JWT for a newly logged-in user.
-    :param resident: [bool] True if the user is a resident, False otherwise.
-    :return: [bytes] a JWT-formatted byte string.
-    """
-    # The expiration time should be one day after the token is issued.
-    exp_time = time.time() + 86400
-
-    # Define headers.
-    # alg: the algorithm being used for encryption (RSA-256).
-    # typ: the format of the string (JWT).
-    headers = {"alg": "RS256",
-               "typ": "JWT"}
-
-    # Define the payload.
-    # exp: the expiration time of the token (24 hours from now).
-    # res: True if the user is a resident, False otherwise.
-    payload = {"exp": exp_time,
-               "res": resident}
-
-    return jwt.encode(payload, PRIVATE_KEY, algorithm='RS256', headers=headers)
-
-
 def provide_jwt(name, resident=False):
     """
     Generates a JWT and returns it as an HTTPOnly cookie.
@@ -235,7 +181,7 @@ def provide_jwt(name, resident=False):
     :return:
     """
     # Get a JWT for the user.
-    token = generate_jwt(resident)
+    token = sc.generate_jwt(resident)
     # Add token to database.
     cmd = 'UPDATE users SET token="{}" WHERE name="{}";'.format(token, name)
     modify_db(USERS_DB, cmd)
@@ -263,7 +209,7 @@ def login():
         result = query_db(USERS_DB, query, True)
         if len(result) == 1:
             # Get a login code for the user.
-            login_code = generate_login_code()
+            login_code = sc.generate_login_code()
             print(login_code)  # TODO: remove this line.
             # Add the login code to the database.
             cmd = 'UPDATE users SET login_code={} WHERE name="{}";'.format(login_code, name)
@@ -314,32 +260,84 @@ def login_guest():
                                     'application')
 
 
-@app.route('/utilities', methods=['GET', 'POST'])
-def utilities():
+# Spotify Endpoints.
+@app.route('/spotify/play', methods=['POST'])
+def spotify_play():
     """
-    Get the utilities cost or set the utilities cost.
-    :return: Success or Error message.
+    Play a song or playlist.
+    :return:
     """
-    if request.method == 'GET':
-        if 'number' in request.args:
-            apt_num = request.args['number']
-            query = 'SELECT cost FROM utilities WHERE apt_number={};'.format(apt_num)
-            return query_db(APARTMENT_DB, query)
-        return response(error=True, msg='There is insufficient data to log a user into the '
-                                        'application')
+    post_data = request.get_json()
 
-    elif request.method == 'POST':
-        post_data = request.get_json()
-        if 'cost' in post_data:
-            apt_num = post_data['apt_number']
-            cost = post_data['cost']
-            # Get current time (Eastern Time Zone).
-            update_time = datetime.now(pytz.timezone('US/Eastern'))
-            cmd = 'UPDATE utilities SET cost={}, update_time={}, update_user={} ' \
-                  'WHERE apt_number={};'.format(cost, update_time, 'TODO', apt_num)
-            modify_db(APARTMENT_DB, cmd)
-            # Successfully completed, return a successful response.
-            return response()
+    if 'uri' in post_data and 'playlist' in post_data:
+        uri = post_data['uri']
+        playlist = post_data['playlist']
+        sp.play(uri, playlist)  # Play the requested song.
+        return response()  # Respond with a success.
+
+    elif 'uri' in post_data:
+        uri = post_data['uri']
+        sp.play(uri)
+
+    return response(error=True, msg='A URI must be given to play the song.')
+
+
+@app.route('/spotify/pause', methods=['PUT'])
+def spotify_pause():
+    """
+    Pause the playback on the active device.
+    :return:
+    """
+    sp.pause()
+    return response()
+
+
+@app.route('/spotify/currently-playing', methods=['GET'])
+def spotify_currently_playing():
+    """
+    Get the song that is currently playing.
+    :return: [str] JSON-formatted track object.
+    """
+    return jsonify(sp.currently_playing())
+
+
+@app.route('/spotify/shuffle', methods=['PUT'])
+def spotify_shuffle():
+    """
+    Shuffle the current playlist.
+    :return:
+    """
+    put_data = request.get_json()  # Retrieve JSON data.
+    sp.shuffle(put_data['state'])  # Set the shuffle state to the 'state' value.
+    return response()
+
+
+@app.route('/spotify/search', methods=['GET'])
+def spotify_search():
+    """
+    Search for a song on Spotify.
+    :return:
+    """
+    if 'query' in request.args:
+        query = request.args['query']
+        return jsonify(sp.search(query))
+
+    return response(error=True, msg='Invalid query.')
+
+
+@app.route('/spotify/add-to-queue', methods=['POST'])
+def spotify_add_to_queue():
+    """
+    Add a song to the queue.
+    :return:
+    """
+    post_data = request.get_json()
+    if 'uri' in post_data:
+        uri = post_data['uri']
+        sp.add_to_queue(uri)
+        return response()
+
+    return response(error=True, msg='Must provide a valid Spotify URI.')
 
 
 if __name__ == '__main__':
