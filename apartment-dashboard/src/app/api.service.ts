@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpErrorResponse} from "@angular/common/http";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Observable, throwError } from 'rxjs';
-import { catchError, retry } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
+import { SpotifyResponse } from "./spotifyResponse";
 
 @Injectable({
   providedIn: 'root'
@@ -52,9 +53,98 @@ export class ApiService {
    * @param email: the user's email address.
    */
   register(registrationCode: string, name: string, email:string) {
-    let url = `${this.API_URL}register`
-    let content = {code: registrationCode, name: name, email: email}
+    let url = `${this.API_URL}register`;
+    let content = {code: registrationCode, name: name, email: email};
     return this.http.post(url, content)
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  /**
+   * Perform a GET request to the API to get the results of the search.
+   * @param query: the search query.
+   */
+  spotifySearch(query: string): Observable<SpotifyResponse[]> {
+    let url = `${this.API_URL}spotify/search?query=${query}`;
+    return this.http.get<SpotifyResponse[]>(url)
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  /**
+   * Begin playback on a connected device.
+   * @param uri: the Spotify URI of the song/playlist to play.
+   * @param playlist: True if the given URI is a playlist, false otherwise.
+   */
+  spotifyStartPlayback(uri: string, playlist: boolean){
+    let url = `${this.API_URL}spotify/play`
+    let content = { 'uri': uri, 'playlist': playlist}
+    return this.http.post(url, content)
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  /**
+   * Pause or resume the playback.
+   * @param resume: True if the player should resume, false if the player should pause.
+   */
+  spotifyUpdatePlaybackState(resume: boolean) {
+    let url = ''
+    if (resume){
+      url = `${this.API_URL}spotify/play`;
+    }
+    else {
+      url = `${this.API_URL}spotify/pause`;
+    }
+    return this.http.put(url, '')
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  /**
+   * Get the metadata for the song that is currently playing.
+   */
+  spotifyGetCurrentlyPlaying(): Observable<SpotifyResponse>{
+    let url = `${this.API_URL}spotify/currently-playing`
+    return this.http.get<SpotifyResponse>(url)
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  /**
+   * Change the state of the shuffle parameter on spotify.
+   * @param state: true if the shuffle should be enabled, false otherwise.
+   */
+  spotifyShuffle(state: boolean) {
+    let url = `${this.API_URL}spotify/shuffle`
+    let content = {'state': state}
+    return this.http.put(url, content)
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  /**
+   * Add a song to the spotify queue.
+   * @param uri: the Spotify URI of the song to play.
+   */
+  spotifyAdd(uri: string) {
+    let url = `${this.API_URL}spotify/add-to-queue`
+    let content = {'uri': uri}
+    return this.http.post(url, content)
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  spotifyGetPlaylists() {
+    let url = `${this.API_URL}spotify/playlists`
+    return this.http.get<SpotifyResponse[]>(url)
       .pipe(
         catchError(ApiService.handleError)
       )

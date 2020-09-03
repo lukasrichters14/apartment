@@ -13,8 +13,8 @@ class SecurityController:
     """
 
     def __init__(self):
-        PUBLIC_KEY_FILE_NAME = './keys/public-key.pem'
-        PRIVATE_KEY_FILE_NAME = './keys/private-key.pem'
+        PUBLIC_KEY_FILE_NAME = './security/keys/public-key.pem'
+        PRIVATE_KEY_FILE_NAME = './security/keys/private-key.pem'
         self.PRIVATE_KEY = SecurityController._get_private_key(PRIVATE_KEY_FILE_NAME)
         self.PUBLIC_KEY = SecurityController._get_public_key(PUBLIC_KEY_FILE_NAME)
 
@@ -79,4 +79,3 @@ class SecurityController:
         :return: [int] the number generated to login with.
         """
         return randint(10000, 99999)
-

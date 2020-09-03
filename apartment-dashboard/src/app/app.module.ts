@@ -11,6 +11,7 @@ import { LoginGuestComponent } from './login-guest/login-guest.component';
 import { RegisterComponent } from './register/register.component';
 import { LoginCodeComponent } from './login-code/login-code.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { SpotifyComponent } from './spotify/spotify.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { DashboardComponent } from './dashboard/dashboard.component';
     LoginGuestComponent,
     RegisterComponent,
     LoginCodeComponent,
-    DashboardComponent
+    DashboardComponent,
+    SpotifyComponent
   ],
     imports: [
         BrowserModule,

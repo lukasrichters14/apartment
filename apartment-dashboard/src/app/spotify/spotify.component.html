@@ -1,0 +1,37 @@
+<div class="main">
+  <div id="search-playlist">
+      <label>
+        Search:
+        <input type="text" [formControl]="searchBar">
+        <button (click)="search()">Go</button>
+      </label>
+    <label>
+      Pick a playlist (optional):
+      <select name="playlist-options" [formControl]="playlistSelection">
+        <option *ngFor="let playlist of playlists" value="{{playlist.uri}}">
+          {{playlist.name}}
+        </option>
+      </select>
+    </label>
+    <button id="start-playlist-button" (click)="startPlaylist()">Start Playlist</button>
+  </div>
+  <div *ngIf="showSearch" id="search-results">
+    <button *ngFor="let result of searchResults" class="search-result" (click)="addToQueue(result.uri)">
+      {{result.name}} - {{result.artist}}
+    </button>
+  </div>
+  <div class="controls">
+    <div *ngIf="notPlayingMsg == ''" class="currently-playing">
+      <img src="{{currentlyPlaying.artwork}}" alt="Album artwork for the currently playing song.">
+      <h2>{{currentlyPlaying.name}}</h2>
+      <p>{{currentlyPlaying.artist}} - {{currentlyPlaying.album}}</p>
+      <input class="img-button" type="image" alt="pause button" *ngIf="play" title="pause"
+             src="assets/pause.png" (click)="updatePlaybackState()">
+      <input class="img-button" type="image" alt="play button" *ngIf="!play" title="play"
+             src="assets/play.png" (click)="updatePlaybackState()">
+      <br>
+      <button id="refresh" (click)="getCurrentlyPlaying()">Refresh Player</button>
+    </div>
+    <p *ngIf="notPlayingMsg != ''">{{notPlayingMsg}}</p>
+  </div>
+</div>

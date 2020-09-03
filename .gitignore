@@ -1,7 +1,7 @@
 /.idea
 /logbook.txt
 /data
-/keys
+/security/keys
 *.spec.ts
 spotipy-test.py
 .cache-lukasrichters14

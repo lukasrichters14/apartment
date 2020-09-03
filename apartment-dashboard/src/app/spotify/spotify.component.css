@@ -1,0 +1,40 @@
+.main {
+
+}
+
+.img-button {
+  width: 60px;
+  height: 60px;
+  margin: auto;
+}
+
+.search-result {
+  margin: .5rem;
+  padding: .5rem;
+  border: 2px solid black;
+  border-radius: 50px;
+}
+
+.search-result:hover {
+ cursor: pointer;
+}
+
+label {
+  margin: 2rem 1rem 2rem 1rem;
+}
+
+input {
+  margin-right: 1rem;
+}
+
+.controls {
+  display: flex;
+  flex-flow: column nowrap;
+  margin: 2rem auto auto auto;
+  align-items: center;
+  text-align: center;
+}
+
+#refresh {
+  margin-top: 3rem;
+}

@@ -1,8 +1,10 @@
+import sys
 import flask
 from flask import request, jsonify, make_response
 from flask_cors import CORS
 import sqlite3
 
+sys.path.append('./security')
 from speaker import Speaker
 from security import SecurityController
 
@@ -15,7 +17,7 @@ USERS_DB = './data/users.db'
 SPOTIFY_DB = './data/spotify.db'
 
 # Control classes
-sp = Speaker('raspotify (raspberrypi)')
+sp = Speaker('2034-speakers')
 sc = SecurityController()
 
 
@@ -261,25 +263,28 @@ def login_guest():
 
 
 # Spotify Endpoints.
-@app.route('/spotify/play', methods=['POST'])
+@app.route('/spotify/play', methods=['POST', 'PUT'])
 def spotify_play():
     """
     Play a song or playlist.
     :return:
     """
-    post_data = request.get_json()
+    # Start playback.
+    if request.method == 'POST':
+        post_data = request.get_json()
 
-    if 'uri' in post_data and 'playlist' in post_data:
-        uri = post_data['uri']
-        playlist = post_data['playlist']
-        sp.play(uri, playlist)  # Play the requested song.
-        return response()  # Respond with a success.
+        if 'uri' in post_data and 'playlist' in post_data:
+            uri = post_data['uri']
+            playlist = post_data['playlist']
+            sp.play(uri, playlist, resume=False)  # Play the requested song.
+            return response()  # Respond with a success.
 
-    elif 'uri' in post_data:
-        uri = post_data['uri']
-        sp.play(uri)
+        return response(error=True, msg='A URI must be given to play the song.')
 
-    return response(error=True, msg='A URI must be given to play the song.')
+    # Resume playback.
+    elif request.method == 'PUT':
+        sp.play(resume=True)
+        return response()
 
 
 @app.route('/spotify/pause', methods=['PUT'])
@@ -298,7 +303,11 @@ def spotify_currently_playing():
     Get the song that is currently playing.
     :return: [str] JSON-formatted track object.
     """
-    return jsonify(sp.currently_playing())
+    cp = sp.currently_playing()
+    # Check if there is a currently playing track.
+    if cp:
+        return jsonify(cp)
+    return response(error=True, msg='There is not a currently playing track.')
 
 
 @app.route('/spotify/shuffle', methods=['PUT'])
@@ -338,6 +347,14 @@ def spotify_add_to_queue():
         return response()
 
     return response(error=True, msg='Must provide a valid Spotify URI.')
+
+
+@app.route('/spotify/playlists', methods=['GET'])
+def spotify_playlists():
+    """
+    Get the playlists for the current user.
+    """
+    return jsonify(sp.get_playlists())
 
 
 if __name__ == '__main__':
