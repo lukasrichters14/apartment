@@ -18,7 +18,7 @@
 }
 
 #menu {
-  width: 5%;
+  width: 75px;
 }
 
 #rent-cost {
@@ -35,4 +35,18 @@
 
 .update-button {
   margin: auto auto auto 2rem;
+}
+
+@media (max-width: 700px) {
+  .dashboard-card {
+    width: 60%;
+  }
+}
+
+@media (max-width: 500px) {
+
+  .dashboard-card {
+    width: 90%;
+  }
+
 }

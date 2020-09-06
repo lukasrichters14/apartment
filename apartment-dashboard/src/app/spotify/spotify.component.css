@@ -1,5 +1,5 @@
 .main {
-
+  margin-top: 2rem;
 }
 
 .img-button {
@@ -8,6 +8,11 @@
   margin: auto;
 }
 
+#search-results {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+}
 .search-result {
   margin: .25rem;
   padding: .5rem;
@@ -16,11 +21,7 @@
 }
 
 .search-result:hover {
- cursor: pointer;
-}
-
-label {
-  margin: 2rem 1rem 2rem 1rem;
+  cursor: pointer;
 }
 
 input {
@@ -51,8 +52,20 @@ input {
   margin-right: 3rem;
 }
 
+#search-button {
+  margin-right: 2rem;
+}
+
+#start-playlist-button {
+  margin-left: 1rem;
+}
+
 
 @media(max-width: 900px) {
+  main {
+    margin-top: 0;
+  }
+
   #search-playlist {
     display: none;
   }
@@ -66,5 +79,52 @@ input {
   #search-playlist-mobile button {
     margin-left: 1rem;
     margin-right: 1rem;
+  }
+
+  .modal {
+    position: fixed;
+    z-index: 1;
+    background-color: grey;
+    margin: 1.5rem auto 1.5rem auto;
+    width: 95%;
+    height: 90%;
+    opacity: 95%;
+    left: 0;
+    right: 0;
+    overflow: auto;
+  }
+
+  .modal button {
+    margin: .5rem;
+  }
+
+  #search-bar {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+  }
+
+  #search-results-modal {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+  }
+
+  #search-results-modal button{
+    margin: .2rem;
+    text-align: center;
+  }
+
+  input {
+    margin: 0;
+  }
+
+  #playlist-mobile {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
   }
 }

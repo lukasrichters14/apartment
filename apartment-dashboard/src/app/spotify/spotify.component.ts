@@ -19,7 +19,9 @@ export class SpotifyComponent implements OnInit {
   playlists: SpotifyResponse[];
   searchResults: SpotifyResponse[];
   displaySearchModal: boolean = false;
-  showSearchModalResults: boolean = false;
+  displaySearchModalResults: boolean = false;
+  displayPlaylistModal: boolean = false;
+
 
   constructor(private api:ApiService) { }
 
@@ -45,7 +47,7 @@ export class SpotifyComponent implements OnInit {
       this.api.spotifySearch(query)
         .subscribe( resp =>{
           if (this.displaySearchModal) {
-            this.showSearchModalResults = true;
+            this.displaySearchModalResults = true;
           }
           else {
             this.showSearch = true;
@@ -81,6 +83,8 @@ export class SpotifyComponent implements OnInit {
       .subscribe( resp => {
         console.log(resp);
       });
+    // Close the display.
+    this.displayPlaylistModal = false;
   }
 
   /**
@@ -101,7 +105,10 @@ export class SpotifyComponent implements OnInit {
         console.log(resp);
       });
     }
+    // Stop displays.
     this.showSearch = false;
+    this.displaySearchModalResults = false;
+    this.displaySearchModal = false;
   }
 
   /**

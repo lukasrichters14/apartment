@@ -1,14 +1,39 @@
 .main{
   display: flex;
   flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
 }
 
 .menu-icon{
-  width: 10%;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
   border: 2px solid black;
-  margin: 1.5rem;
+  margin: 1.5rem 1rem .5rem 1rem;
+  width: 110px;
+}
+
+.menu-icon img {
+  height: 60px;
+  width: 60px;
 }
 
 .menu-icon:hover{
   cursor: pointer;
 }
+
+#dnd-tools {
+  display: none;
+}
+
+#shopping-list {
+  display: none;
+}
+
+#documents {
+  display: none;
+}
+
