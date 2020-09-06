@@ -9,7 +9,7 @@
 }
 
 .search-result {
-  margin: .5rem;
+  margin: .25rem;
   padding: .5rem;
   border: 2px solid black;
   border-radius: 50px;
@@ -37,4 +37,34 @@ input {
 
 #refresh {
   margin-top: 3rem;
+}
+
+#search-playlist {
+  text-align: center;
+}
+
+#search-playlist-mobile {
+  display: none;
+}
+
+#menu {
+  margin-right: 3rem;
+}
+
+
+@media(max-width: 900px) {
+  #search-playlist {
+    display: none;
+  }
+
+  #search-playlist-mobile {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+  }
+
+  #search-playlist-mobile button {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
 }

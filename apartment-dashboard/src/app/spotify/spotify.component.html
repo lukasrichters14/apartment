@@ -1,5 +1,11 @@
 <div class="main">
+  <div id="search-playlist-mobile">
+    <button routerLink="/menu">Menu</button>
+    <button (click)="displaySearchModal = true">Search</button>
+    <button routerLink="/menu">Settings</button>
+  </div>
   <div id="search-playlist">
+      <button id="menu" routerLink="/menu">Menu</button>
       <label>
         Search:
         <input type="text" [formControl]="searchBar">
@@ -14,6 +20,18 @@
       </select>
     </label>
     <button id="start-playlist-button" (click)="startPlaylist()">Start Playlist</button>
+  </div>
+  <div *ngIf="displaySearchModal" class="modal" id="search-modal">
+    <label>
+        Search:
+        <input type="text" [formControl]="searchBar">
+        <button (click)="search()">Go</button>
+      </label>
+    <div *ngIf="showSearchModalResults" id="search-results-modal">
+    <button *ngFor="let result of searchResults" class="search-result" (click)="addToQueue(result.uri)">
+      {{result.name}} - {{result.artist}}
+    </button>
+    </div>
   </div>
   <div *ngIf="showSearch" id="search-results">
     <button *ngFor="let result of searchResults" class="search-result" (click)="addToQueue(result.uri)">

@@ -17,7 +17,7 @@ USERS_DB = './data/users.db'
 SPOTIFY_DB = './data/spotify.db'
 
 # Control classes
-sp = Speaker('2034-speakers')
+sp = Speaker('Pixel 3')
 sc = SecurityController()
 
 

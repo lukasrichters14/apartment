@@ -11,13 +11,15 @@ import {SpotifyResponse} from "../spotifyResponse";
 export class SpotifyComponent implements OnInit {
 
   searchBar = new FormControl('');
-  showSearch: boolean = true;
+  showSearch: boolean = false;
   playlistSelection = new FormControl('');
   currentlyPlaying: SpotifyResponse;
   notPlayingMsg = "Nothing's happening right now.";
   play = true;
   playlists: SpotifyResponse[];
   searchResults: SpotifyResponse[];
+  displaySearchModal: boolean = false;
+  showSearchModalResults: boolean = false;
 
   constructor(private api:ApiService) { }
 
@@ -42,7 +44,12 @@ export class SpotifyComponent implements OnInit {
       // Perform the search.
       this.api.spotifySearch(query)
         .subscribe( resp =>{
-          this.showSearch = true;
+          if (this.displaySearchModal) {
+            this.showSearchModalResults = true;
+          }
+          else {
+            this.showSearch = true;
+          }
           // Display results.
           this.searchResults = resp;
         }
