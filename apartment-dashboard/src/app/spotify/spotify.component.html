@@ -1,11 +1,11 @@
 <div class="main">
 
   <div id="search-playlist">
-      <button id="menu" routerLink="/menu">Menu</button>
+      <button class="menu-button" id="menu" routerLink="/menu">Menu</button>
       <label>
         Search:
         <input type="text" [formControl]="searchBar">
-        <button id="search-button" (click)="search()">Go</button>
+        <button class="generic-style-button" id="search-button" (click)="search()">Go</button>
       </label>
     <label>
       Pick a playlist (optional):
@@ -15,7 +15,7 @@
         </option>
       </select>
     </label>
-    <button id="start-playlist-button" (click)="startPlaylist()">Start Playlist</button>
+    <button class="generic-style-button" id="start-playlist-button" (click)="startPlaylist()">Start Playlist</button>
   </div>
 
   <div *ngIf="showSearch" id="search-results">
@@ -25,20 +25,20 @@
   </div>
 
   <div id="search-playlist-mobile">
-    <button routerLink="/menu">Menu</button>
-    <button (click)="displaySearchModal = true">Search</button>
-    <button (click)="displayPlaylistModal = true">Playlist</button>
+    <button class="menu-button" routerLink="/menu">Menu</button>
+    <button class="generic-style-button" (click)="displaySearchModal = true">Search</button>
+    <button class="generic-style-button" (click)="displayPlaylistModal = true">Playlist</button>
   </div>
 
   <div *ngIf="displaySearchModal" class="modal" id="search-modal">
-    <button (click)="displaySearchModal = false">Close</button>
+    <button class="generic-style-button" (click)="displaySearchModal = false">Close</button>
     <br>
     <div id="search-bar">
       <label>
         Search:
         <input type="text" [formControl]="searchBar">
       </label>
-      <button (click)="search()">Go</button>
+      <button class="generic-style-button" (click)="search()">Go</button>
     </div>
     <div *ngIf="displaySearchModalResults" id="search-results-modal">
     <button *ngFor="let result of searchResults" class="search-result" (click)="addToQueue(result.uri)">
@@ -48,7 +48,7 @@
   </div>
 
   <div *ngIf="displayPlaylistModal" class="modal" id="playlist-modal">
-    <button (click)="displayPlaylistModal = false">Close</button>
+    <button class="generic-style-button" (click)="displayPlaylistModal = false">Close</button>
     <br>
     <div id="playlist-mobile">
       <label for="playlist-options">Pick a playlist:</label>
@@ -58,7 +58,7 @@
             {{playlist.name}}
           </option>
         </select>
-        <button id="start-playlist-button-mobile" (click)="startPlaylist()">Start Playlist</button>
+        <button class="generic-style-button" id="start-playlist-button-mobile" (click)="startPlaylist()">Start Playlist</button>
       </span>
     </div>
   </div>
@@ -73,7 +73,7 @@
       <input class="img-button" type="image" alt="play button" *ngIf="!play" title="play"
              src="assets/play.png" (click)="updatePlaybackState()">
       <br>
-      <button id="refresh" (click)="getCurrentlyPlaying()">Refresh Player</button>
+      <button class="generic-style-button" id="refresh" (click)="getCurrentlyPlaying()">Refresh Player</button>
     </div>
     <p *ngIf="notPlayingMsg != ''">{{notPlayingMsg}}</p>
   </div>
