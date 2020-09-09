@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {ApiService} from "../api.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-dashboard',
@@ -9,9 +11,18 @@ export class DashboardComponent implements OnInit {
 
   rentDue: string;
 
-  constructor() { }
+  constructor(private api:ApiService, private route: Router) { }
 
   ngOnInit(): void {
+
+    this.api.validate(true)
+      .subscribe( resp => {
+        console.log(resp);
+        if(resp.hasOwnProperty('error')){
+          this.route.navigateByUrl('login')
+        }
+      });
+
     let days = this.daysLeftInMonth();
     if (days > 1 || days == 0){
       this.rentDue = `${days} days`

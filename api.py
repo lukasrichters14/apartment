@@ -3,6 +3,7 @@ import flask
 from flask import request, jsonify, make_response
 from flask_cors import CORS
 import sqlite3
+from datetime import datetime
 
 sys.path.append('./security')
 from speaker import Speaker
@@ -17,8 +18,11 @@ USERS_DB = './data/users.db'
 SPOTIFY_DB = './data/spotify.db'
 
 # Control classes
-sp = Speaker('Pixel 3')
+sp = Speaker('2034-speakers')
 sc = SecurityController()
+
+# Error messages.
+NOT_AUTHENTICATED_ERROR = 'AUTH ERROR'
 
 
 def create_dict(cursor, row):
@@ -74,19 +78,46 @@ def modify_db(db, query):
     cursor.close()
 
 
-def authenticated(request_obj, resident_page=True):
+def authenticated(request_obj):
     """
     Checks user database for the provided token.
     :param request_obj: the Flask request object.
-    :param resident_page: [bool] True if the page requires a resident account.
     :return: [bool] True if the user has access to this page, False otherwise.
     """
-    token = request_obj.cookies.get('aptJWT')
+    # Attempt to get the token from the cookie.
+    try:
+        token = request_obj.cookies.get('aptJWT')
+        print('Got token: {}'.format(token))
+    except KeyError:
+        print('No JWT cookie.')
+        return False
+
+    # Determine if the page is a resident page.
+    if 'resident_page' in request_obj.args:
+        if request_obj.args['resident_page'] == 'false':
+            resident_page = False
+        else:
+            resident_page = True
+        print('resident_page: {}'.format(resident_page))
+    else:
+        return False
+
+    # Get the user with the given token.
     query = 'SELECT * FROM users WHERE token="{}";'.format(token)
     result = query_db(USERS_DB, query, True)
     # Token exists.
     if len(result) == 1:
+        print('token in database')
+        # Ensure token is valid.
+        if not sc.is_valid(token):
+            print('invalid token')
+            # Delete invalid token.
+            cmd = 'UPDATE users SET token=NULL WHERE token="{}";'.format(token)
+            modify_db(USERS_DB, cmd)
+            return False
+        # Ensure only residents access resident pages.
         if result[0]['resident'] == 0 and resident_page is True:
+            print('does not have resident access')
             return False
         return True
     return False
@@ -110,6 +141,14 @@ def response(error=False, msg="200 OK"):
 @app.route('/', methods=['GET'])
 def home():
     return "Apartment API. Created by Lukas Richters, 2020."
+
+
+@app.route('/validate', methods=['GET'])
+def validate():
+    print('validating')
+    if authenticated(request):
+        return response()
+    return response(error=True, msg=NOT_AUTHENTICATED_ERROR)
 
 
 def check_registration_code(code):
@@ -189,7 +228,7 @@ def provide_jwt(name, resident=False):
     modify_db(USERS_DB, cmd)
     # Return the JWT in an HTTPOnly cookie.
     resp = make_response()
-    resp.set_cookie('aptJWT', token, httponly=True)
+    resp.set_cookie('aptJWT', token, expires=datetime(2022, 11, 30, 1), httponly=True)
     return resp
 
 
@@ -213,6 +252,7 @@ def login():
             # Get a login code for the user.
             login_code = sc.generate_login_code()
             print(login_code)  # TODO: remove this line.
+            print(name)
             # Add the login code to the database.
             cmd = 'UPDATE users SET login_code={} WHERE name="{}";'.format(login_code, name)
             modify_db(USERS_DB, cmd)

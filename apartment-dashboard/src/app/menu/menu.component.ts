@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {ApiService} from "../api.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-menu',
@@ -8,9 +9,16 @@ import {ApiService} from "../api.service";
 })
 export class MenuComponent implements OnInit {
 
-  constructor(private api: ApiService) { }
+  constructor(private api: ApiService, private route:Router) { }
 
   ngOnInit(): void {
+    this.api.validate(false)
+      .subscribe( resp => {
+        console.log(resp);
+        if(resp.hasOwnProperty('error')){
+          this.route.navigateByUrl('login')
+        }
+      });
   }
 
 }

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {ApiService} from "../api.service";
 import {FormControl} from "@angular/forms";
 import {SpotifyResponse} from "../spotifyResponse";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-spotify',
@@ -23,9 +24,18 @@ export class SpotifyComponent implements OnInit {
   displayPlaylistModal: boolean = false;
 
 
-  constructor(private api:ApiService) { }
+  constructor(private api:ApiService, private route:Router) { }
 
   ngOnInit(): void {
+    // Ensure the user has a valid token.
+    this.api.validate(false)
+      .subscribe( resp => {
+        console.log(resp);
+        if(resp.hasOwnProperty('error')){
+          this.route.navigateByUrl('login')
+        }
+      });
+
     // Get the currently playing song.
     this.getCurrentlyPlaying();
 
@@ -103,6 +113,13 @@ export class SpotifyComponent implements OnInit {
       this.api.spotifyAdd(uri)
       .subscribe( resp => {
         console.log(resp);
+        if(resp.hasOwnProperty('error')){
+          window.alert('There was an error adding this song to the queue. Check your connection' +
+            ' and try again.')
+        }
+        else{
+          window.alert('Your song has been added to the queue!')
+        }
       });
     }
     // Stop displays.

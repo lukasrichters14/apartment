@@ -62,6 +62,18 @@ export class ApiService {
   }
 
   /**
+   * Determine if the user has access to this page.
+   * @param residentPage true if the page is accessible only to residents, false otherwise.
+   */
+  validate(residentPage: boolean) {
+    let url = `${this.API_URL}validate?resident_page=${residentPage}`;
+    return this.http.get(url)
+      .pipe(
+        catchError(ApiService.handleError)
+      )
+  }
+
+  /**
    * Perform a GET request to the API to get the results of the search.
    * @param query: the search query.
    */

@@ -72,6 +72,21 @@ class SecurityController:
 
         return jwt.encode(payload, self.PRIVATE_KEY, algorithm='RS256', headers=headers)
 
+    def is_valid(self, token):
+        """
+        Determine if the JWT is still valid.
+        :param token: the JWT.
+        :return: [bool] True if the token is valid, False otherwise.
+        """
+        # Decode token.
+        payload = jwt.decode(token, self.PUBLIC_KEY, algorithms='RS256')
+        exp = payload['exp']
+        current_time = time.time()
+        # Check if token is expired.
+        if current_time > exp:
+            return False
+        return True
+
     @staticmethod
     def generate_login_code():
         """
